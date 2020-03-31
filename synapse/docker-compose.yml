@@ -1,0 +1,45 @@
+version: "3"
+services:
+  synapse:
+    image: matrixdotorg/synapse:latest
+    volumes:
+      - ./data:/data
+      - /opt/synapse/:/opt/synapse
+    restart: unless-stopped
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - SYNAPSE_CONFIG_PATH=/opt/synapse/data/homeserver.yaml
+    networks:
+      - internal
+      - traefik_web
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik_web
+      - traefik.http.routers.http-synapse.rule=Host(`matrix.domain.com`)
+      - traefik.http.routers.http-synapse.middlewares=https_redirect
+      - traefik.http.routers.https-synapse.entryPoints=websecure
+      - traefik.http.routers.https-synapse.rule=Host(`matrix.domain.com`)
+      - traefik.http.routers.https-synapse.service=synapse
+      - traefik.http.routers.https-synapse.tls=true
+      - traefik.http.services.synapse.loadbalancer.server.port=8448
+      - traefik.http.routers.https-synapse.tls.certResolver=myhttpchallenge
+  db:
+    image: docker.io/postgres:10-alpine
+    env_file:
+      - .env
+    networks:
+      - internal
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER} 
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+networks:
+  internal:
+  traefik_web:
+    external: true
+

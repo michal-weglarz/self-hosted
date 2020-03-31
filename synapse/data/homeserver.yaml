@@ -1,0 +1,78 @@
+tls_certificate_path: "/opt/synapse/data/fullchain1.pem"
+tls_private_key_path: "/opt/synapse/data/privkey1.pem"
+
+# app_service_config_files: ["/opt/synapse/facebook-registration.yaml"]
+
+acme:
+    enabled: false
+    port: 8008
+
+
+## Server ##
+
+server_name: "matrix.domain.com"
+pid_file: /homeserver.pid
+web_client: True
+soft_file_limit: 0
+log_config: 0
+
+no_tls: True
+
+enable_registration: True
+
+report_stats: True
+
+media_store_path: "/opt/synapse/data/media_store"
+uploads_path: "/opt/synapse/data/uploads"
+
+room_invite_state_types:
+    - "m.room.join_rules"
+    - "m.room.canonical_alias"
+    - "m.room.avatar"
+    - "m.room.name"
+
+# Database configuration
+database:
+  name: psycopg2
+  args:
+    user: user
+    password: password
+    database: database
+
+    # This hostname is accessible through the docker network and is set 
+    # by docker-compose. If you change the name of the service it will be different
+    host: db
+
+loggers:
+    synapse:
+        level: INFO
+    db:
+        level: INFO
+
+## Ports ##
+listeners:
+  -
+    port: 8448
+    bind_addresses: ['::']
+    type: http
+    tls: false
+    x_forwarded: false
+    resources:
+      - names: [client]
+        compress: true
+      - names: [federation]  # Federation APIs
+        compress: false
+
+  - port: 8008
+    tls: false
+    bind_addresses: ['::']
+    type: http
+    x_forwarded: false
+
+    resources:
+      - names: [client]
+        compress: true
+      - names: [federation]
+        compress: false
+
+
