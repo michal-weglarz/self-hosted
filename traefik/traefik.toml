@@ -1,0 +1,36 @@
+[global]
+  checkNewVersion = true
+  sendAnonymousUsage = false
+
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+  [entryPoints.websecure]
+    address = ":443"
+
+[providers]
+  providersThrottleDuration = "2s"
+  [providers.docker]
+    watch = true
+    endpoint = "unix:///var/run/docker.sock"
+    swarmModeRefreshSeconds = "15s" 
+    network = "traefik_web"
+
+[api]
+  insecure = true
+  dashboard = true
+  debug = true
+
+[log]
+  level = "ERROR"
+
+[certificatesResolvers]
+  [certificatesResolvers.default]
+    [certificatesResolvers.default.acme]
+      email = "name@email.com"
+      storage = "./letsencrypt/acme.json"
+      [certificatesResolvers.default.acme.httpChallenge]
+        entryPoint = "http"
+	 entryPoint = "web"
+
+
