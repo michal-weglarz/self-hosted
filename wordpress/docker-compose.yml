@@ -1,0 +1,52 @@
+version: '3.3'
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./wp-data:/docker-entrypoint-initdb.d
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: database
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    networks:
+      - internal
+
+  wordpress:
+    depends_on:
+      - db
+    links:
+      - db
+    image: wordpress:5.2.3
+    volumes:
+      - ./config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
+      - wp-content:/var/www/html/wp-content
+      - ./config/wp-config.php:/var/www/html/wp-config.php
+    restart: always
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik_web
+      - traefik.http.routers.wp-prawojazdy.rule=Host(`wordpress.domain.com`)
+      - traefik.http.routers.wp-prawojazdy-secure.rule=Host(`wordpress.domain.com`)
+      - traefik.http.routers.wp-prawojazdy.middlewares=https_redirect
+      - traefik.http.routers.wp-prawojazdy-secure.entrypoints=websecure
+      - traefik.http.routers.wp-prawojazdy-secure.tls=true
+      - traefik.http.routers.wp-prawojazdy-secure.tls.certresolver=myhttpchallenge
+      - traefik.http.services.wp-prawojazdy-secure.loadbalancer.server.port=80
+
+    networks:
+     - traefik_web
+     - internal
+
+volumes:
+  db_data: {}
+  wp-content: {}
+
+networks:
+  traefik_web:
+    external: true
+  internal:
+
