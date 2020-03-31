@@ -35,7 +35,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik_web"
-      - "traefik.http.routers.seafile.rule=Host(`seafile.mweglarz.com`)"
+      - "traefik.http.routers.seafile.rule=Host(`seafile.domain.com`)"
       - "traefik.http.routers.seafile.entrypoints=websecure"
       - "traefik.http.routers.seafile.tls.certresolver=myhttpchallenge"
       - "traefik.http.services.seafile.loadbalancer.server.port=80"
